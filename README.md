@@ -13,7 +13,7 @@
 
 ## ✨ 特性
 
-- ⏰ **每天自动检查** — GitHub Actions 定时任务(默认 UTC 03:17),也可手动触发
+- ⏰ **每周自动检查** — GitHub Actions 定时任务(默认 UTC 03:17),也可手动触发
 - 🎁 **免费续期** — 到期前 **120 天**进入续期窗口,自动"申请免费续期 **+1 年**",不花积分
 - 🔑 **只需一个 API Key** — 其余参数全部内置默认,开箱即用
 - 📊 **表格化输出** — 域名/状态/到期时间/剩余天数一目了然(步骤日志 + 运行页 Summary)
@@ -43,7 +43,7 @@
 ## 🔧 工作原理
 
 ```
-GitHub Actions (cron 每天 03:17 UTC)
+GitHub Actions (cron 每周 03:17 UTC)
         │
         ▼
 GET /api/v1/domains ────► 解析每个域名: 到期时间(expires_at)
@@ -91,7 +91,7 @@ GET /api/v1/domains ────► 解析每个域名: 到期时间(expires_at)
 - 「列出域名」步骤日志:同款纯文本表格
 - 确认 3 个域名状态显示正常后即可
 
-之后每天自动运行,不用再管。
+之后每周自动运行,不用再管。
 
 ## ⚙️ 配置(全部内置默认,一般不用改)
 
@@ -128,7 +128,7 @@ node scripts/renew.mjs
 
 ```
 .
-├── .github/workflows/renew.yml   # GitHub Actions 定时任务(每天 03:17 UTC)
+├── .github/workflows/renew.yml   # GitHub Actions 定时任务(每周 03:17 UTC)
 ├── scripts/
 │   ├── renew.mjs                 # 主脚本:检查 + 自动续期(零依赖,Node 18+)
 │   └── list-domains.mjs          # 辅助:只打印域名检查表格
