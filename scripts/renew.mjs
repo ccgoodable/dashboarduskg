@@ -104,6 +104,25 @@ function mdTable(headers, rows) {
   ].join('\n');
 }
 
+/** 配色:GitHub Summary 会剥离 HTML style,故用 emoji 圆点着色 */
+function daysDot(days) {
+  if (days === null || days === undefined) return '⚪';
+  if (days < 0) return '🔴';              // 已过期
+  if (days <= 30) return '🔴';            // 30 天内临期
+  if (days <= THRESHOLD_DAYS) return '🟡'; // 续期窗口内
+  return '🟢';                            // 安全
+}
+/** 状态配色:窗口内🔴 / 窗口外🟢 / 永久有效⚪ */
+function statusDot(status) {
+  if (status === '窗口内') return '🔴';
+  if (status === '窗口外') return '🟢';
+  return '⚪';
+}
+/** 自动续:是✅ / 否➖ */
+function autoDot(v) {
+  return v === '是' ? '✅ 是' : '➖ 否';
+}
+
 /** 续期一个域名;free 域名在支付方式被拒时回退为不带支付方式重试一次 */
 async function renewDomain(name, isFree) {
   const attempt = async (body) => api(`/domains/${encodeURIComponent(name)}/renew`, { method: 'POST', body });
@@ -160,7 +179,7 @@ async function main() {
     else status = '窗口外';
     return { name, expiry, days, status, autoRenew: d.auto_renew ? '是' : '否', isFree: (d.slot_type || d.lifecycle_type) === 'free', raw: d };
   });
-  console.log(fmtTable(['域名', '状态', '到期时间', '剩余天数', '自动续'], rows.map((r) => [r.name, r.status, fmtDate(r.expiry), r.days === null ? '永久' : `${r.days}天`, r.autoRenew])));
+  console.log(fmtTable(['域名', '状态', '到期时间', '剩余天数', '自动续'], rows.map((r) => [r.name, `${statusDot(r.status)} ${r.status}`, fmtDate(r.expiry), r.days === null ? '⚪ 永久' : `${daysDot(r.days)} ${r.days}天`, autoDot(r.autoRenew)])));
   console.log('');
 
   // 3) 自动续期明细:只处理窗口内的域名
@@ -199,8 +218,9 @@ async function main() {
       `## 📋 DigitalPlat 域名每日检查 (${ts})`,
       '',
       `共 ${domains.length} 个域名 · 续期窗口: 到期前 ${THRESHOLD_DAYS} 天 · 每次续 ${YEARS} 年`,
+      '> 🟢 安全 · 🟡 续期窗口内 · 🔴 临期(≤30天)/过期 · ⚪ 永久',
       '',
-      mdTable(['域名', '状态', '到期时间', '剩余天数', '自动续'], rows.map((r) => [r.name, r.status, fmtDate(r.expiry), r.days === null ? '永久' : `${r.days}天`, r.autoRenew])),
+      mdTable(['域名', '状态', '到期时间', '剩余天数', '自动续'], rows.map((r) => [r.name, `${statusDot(r.status)} ${r.status}`, fmtDate(r.expiry), r.days === null ? '⚪ 永久' : `${daysDot(r.days)} ${r.days}天`, autoDot(r.autoRenew)])),
       '',
       '### 自动续期明细',
     ];
